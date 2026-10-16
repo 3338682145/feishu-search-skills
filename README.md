@@ -1,13 +1,13 @@
 # feishu-search-skills
 
-**零配置搜索飞书（Feishu / Lark）公开云文档与知识库。**
+**搜索飞书（Feishu / Lark）公开云文档与知识库。**
 
 An Agent Skill + CLI that searches public Feishu cloud docs and wiki knowledge
-bases via 公开的飞书文档搜索接口（SSE） — **无需注册、无需登录、无需任何密钥、无需浏览器**。
+bases via 公开的飞书文档搜索接口（SSE）。
 
 为什么需要它：Google / Bing 基本不收录 `<租户>.feishu.cn/wiki/...` 这类租户知识库
 （实测 `site:feishu.cn/docx` 收录数为 0），而该公开接口背后有自建的公开云文档索引。本 skill 把
-它的检索能力做成一行命令 —— 打开终端就能用，没有任何前置配置。
+它的检索能力做成一行命令 —— 打开终端就能用。
 
 ---
 
@@ -70,7 +70,7 @@ python3 scripts/feisou_search.py "词" --limit 30 --quiet   # 限条数、静默
 GET https://feisou.app/api/search?q=<urlencode 词>     # SSE, text/event-stream
 ```
 
-未登录访问时网页前端照常发起该请求，服务端不做身份校验，因此命令行可以直接复用，**无需注册、登录或任何凭据**。
+网页前端搜索时直接向该接口发起请求，命令行按同样方式复用即可。
 
 事件流：`progress`（进度）→ `queries`（AI 改写的约 3 条检索词）→ `result`（`groups` 按知识库聚合 / `flat_docs` 扁平列表 / `markdown` 成品 / `total_elapsed`）。
 

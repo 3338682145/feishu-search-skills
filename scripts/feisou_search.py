@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-feisou_search.py — 搜索飞书公开云文档与知识库，零配置开箱即用
+feisou_search.py — 搜索飞书公开云文档与知识库
 
 原理：网页端搜索走的是 SSE 接口 `GET https://feisou.app/api/search?q=<词>`；
-     该接口对访问者不做身份校验（未登录时前端照常发起请求）。
-     本脚本直接复用该接口：无需注册、无需登录、无需任何密钥、无需浏览器。
+     本脚本按同样方式直接复用该接口。
 
 用法：
     python3 feisou_search.py "GEO获客"
