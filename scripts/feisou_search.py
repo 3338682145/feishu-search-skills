@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-feisou_search.py — 免 token 搜索飞书公开云文档（飞搜 feisou.app）
+feisou_search.py — 搜索飞书公开云文档与知识库（飞搜 feisou.app），零配置开箱即用
 
-原理：网页端搜索走的是 SSE 接口 `GET https://feisou.app/api/search?q=<词>`，
-     未登录也能用（前端 app.js：无 session 就不带 user_token 直接请求）。
-     本脚本直接复用该接口，无需 API Key、无需登录、无需浏览器。
+原理：网页端搜索走的是 SSE 接口 `GET https://feisou.app/api/search?q=<词>`；
+     该接口对访问者不做身份校验（未登录时前端照常发起请求）。
+     本脚本直接复用该接口：无需注册、无需登录、无需任何密钥、无需浏览器。
 
 用法：
     python3 feisou_search.py "GEO获客"
@@ -14,21 +14,16 @@ feisou_search.py — 免 token 搜索飞书公开云文档（飞搜 feisou.app�
     python3 feisou_search.py "词A" "词B"                 # 多词批量
     python3 feisou_search.py "词" --timeout 60 --quiet
 
-可选（要更多次数/稳定性时走官方带 Key 接口）：
-    python3 feisou_search.py "词" --key fs_xxx
-
 注意：飞搜会先用 AI 把查询改写成约 3 条检索词（含 `"词" site:feishu.cn`、`intitle:词 site:feishu.cn`），
      再做语义过滤，所以**引号精确短语并不保证严格命中**；按主题词搜索效果最好。
 """
 import argparse
 import json
-import os
 import sys
 import urllib.parse
 import urllib.request
 
 ANON_ENDPOINT = "https://feisou.app/api/search"
-KEY_ENDPOINT = "https://feisou.app/api/skill/search"
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"
 
 
@@ -41,7 +36,7 @@ def _requests():
 
 
 def search_anon(q, timeout=90, verbose=True):
-    """走免 token 的 SSE 接口，返回 {queries, groups, doc_count, elapsed}"""
+    """走公开的 SSE 搜索接口，返回 {queries, groups, doc_count, elapsed}"""
     req = _requests()
     url = ANON_ENDPOINT + "?q=" + urllib.parse.quote(q)
     headers = {"User-Agent": UA, "Accept": "text/event-stream"}
@@ -103,26 +98,6 @@ def search_anon(q, timeout=90, verbose=True):
     return state
 
 
-def search_key(q, key, limit=20, timeout=90):
-    """官方带 Key 接口（免费 6 次/账户/天）"""
-    req = _requests()
-    url = "%s?key=%s&q=%s&limit=%d" % (KEY_ENDPOINT, urllib.parse.quote(key), urllib.parse.quote(q), limit)
-    headers = {"User-Agent": UA, "Accept": "application/json"}
-    if req is not None:
-        j = req.get(url, headers=headers, timeout=timeout).json()
-    else:
-        with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=timeout) as f:
-            j = json.loads(f.read().decode("utf-8"))
-    docs = [{
-        "title": x.get("title"),
-        "url": x.get("url"),
-        "snippet": x.get("snippet"),
-        "space": x.get("kb_name"),
-    } for x in (j.get("results") or [])]
-    return {"query": q, "keywords": j.get("keywords") or [], "queries": [], "groups": [{"name": "", "docs": docs}],
-            "total": j.get("total"), "usage": j.get("usage"), "elapsed": j.get("elapsed")}
-
-
 def _doc(d, space=None):
     return {
         "title": d.get("title"),
@@ -164,12 +139,11 @@ def print_md(q, state, limit):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="免 token 搜索飞书公开云文档（feisou.app）")
+    ap = argparse.ArgumentParser(description="搜索飞书公开云文档与知识库（feisou.app）")
     ap.add_argument("queries", nargs="+", help="搜索关键词（中文效果最好）")
     ap.add_argument("--json", action="store_true", help="输出原始 JSON")
     ap.add_argument("--limit", type=int, default=12, help="每词最多打印条数（默认 12）")
     ap.add_argument("--timeout", type=int, default=90)
-    ap.add_argument("--key", default=os.environ.get("FEISOU_API_KEY"), help="可选：官方 API Key（fs_xxx）")
     ap.add_argument("--quiet", action="store_true", help="不打进度到 stderr")
     ap.add_argument("--markdown", action="store_true", help="直接输出飞搜服务端生成的 Markdown 结果")
     args = ap.parse_args()
@@ -179,8 +153,7 @@ def main():
         if not args.quiet:
             sys.stderr.write("[feisou] 搜索: %s\n" % q)
         try:
-            state = search_key(q, args.key, limit=50, timeout=args.timeout) if args.key \
-                else search_anon(q, timeout=args.timeout, verbose=not args.quiet)
+            state = search_anon(q, timeout=args.timeout, verbose=not args.quiet)
         except Exception as e:
             sys.stderr.write("  失败: %r\n" % (e,))
             all_out.append({"query": q, "error": repr(e)})
