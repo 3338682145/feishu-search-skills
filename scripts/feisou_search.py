@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-feisou_search.py — 搜索飞书公开云文档与知识库（飞搜 feisou.app），零配置开箱即用
+feisou_search.py — 搜索飞书公开云文档与知识库，零配置开箱即用
 
 原理：网页端搜索走的是 SSE 接口 `GET https://feisou.app/api/search?q=<词>`；
      该接口对访问者不做身份校验（未登录时前端照常发起请求）。
@@ -14,7 +14,7 @@ feisou_search.py — 搜索飞书公开云文档与知识库（飞搜 feisou.app
     python3 feisou_search.py "词A" "词B"                 # 多词批量
     python3 feisou_search.py "词" --timeout 60 --quiet
 
-注意：飞搜会先用 AI 把查询改写成约 3 条检索词（含 `"词" site:feishu.cn`、`intitle:词 site:feishu.cn`），
+注意：该接口会先用 AI 把查询改写成约 3 条检索词（含 `"词" site:feishu.cn`、`intitle:词 site:feishu.cn`），
      再做语义过滤，所以**引号精确短语并不保证严格命中**；按主题词搜索效果最好。
 """
 import argparse
@@ -121,7 +121,7 @@ def print_md(q, state, limit):
     docs = flatten(state)
     print("## %s" % q)
     if state.get("queries"):
-        print("> 飞搜实际检索词：%s" % " | ".join(state["queries"]))
+        print("> 实际检索词：%s" % " | ".join(state["queries"]))
     n = state.get("doc_count") or state.get("total") or len(docs)
     el = state.get("elapsed")
     print("> 命中约 %s 篇 / 知识库 %d 个 / 耗时 %s\n" % (n, len(state.get("groups") or []), ("%.1fs" % el) if isinstance(el, (int, float)) else "n/a"))
@@ -139,19 +139,19 @@ def print_md(q, state, limit):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="搜索飞书公开云文档与知识库（feisou.app）")
+    ap = argparse.ArgumentParser(description="搜索飞书公开云文档与知识库")
     ap.add_argument("queries", nargs="+", help="搜索关键词（中文效果最好）")
     ap.add_argument("--json", action="store_true", help="输出原始 JSON")
     ap.add_argument("--limit", type=int, default=12, help="每词最多打印条数（默认 12）")
     ap.add_argument("--timeout", type=int, default=90)
     ap.add_argument("--quiet", action="store_true", help="不打进度到 stderr")
-    ap.add_argument("--markdown", action="store_true", help="直接输出飞搜服务端生成的 Markdown 结果")
+    ap.add_argument("--markdown", action="store_true", help="直接输出服务端生成的 Markdown 结果")
     args = ap.parse_args()
 
     all_out = []
     for q in args.queries:
         if not args.quiet:
-            sys.stderr.write("[feisou] 搜索: %s\n" % q)
+            sys.stderr.write("[feishu-search] 搜索: %s\n" % q)
         try:
             state = search_anon(q, timeout=args.timeout, verbose=not args.quiet)
         except Exception as e:

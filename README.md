@@ -3,11 +3,11 @@
 **零配置搜索飞书（Feishu / Lark）公开云文档与知识库。**
 
 An Agent Skill + CLI that searches public Feishu cloud docs and wiki knowledge
-bases via [飞搜 feisou.app](https://feisou.app) — **无需注册、无需登录、无需任何密钥、无需浏览器**。
+bases via 公开的飞书文档搜索接口（SSE） — **无需注册、无需登录、无需任何密钥、无需浏览器**。
 
 为什么需要它：Google / Bing 基本不收录 `<租户>.feishu.cn/wiki/...` 这类租户知识库
-（实测 `site:feishu.cn/docx` 收录数为 0），而飞搜有自建的公开云文档索引。本 skill 把
-飞搜的检索能力做成一行命令 —— 打开终端就能用，没有任何前置配置。
+（实测 `site:feishu.cn/docx` 收录数为 0），而该公开接口背后有自建的公开云文档索引。本 skill 把
+它的检索能力做成一行命令 —— 打开终端就能用，没有任何前置配置。
 
 ---
 
@@ -43,7 +43,7 @@ python3 scripts/feisou_search.py "词" --limit 30 --quiet   # 限条数、静默
 | --- | --- |
 | `--limit N` | 每个关键词最多打印条数（默认 12） |
 | `--json` | 输出原始 JSON（含 `flat_docs` / `groups` / `markdown` / `total_elapsed`） |
-| `--markdown` | 直接输出飞搜服务端生成的 Markdown 结果 |
+| `--markdown` | 直接输出服务端生成的 Markdown 结果 |
 | `--quiet` | 不打印进度到 stderr |
 | `--timeout N` | 单次请求超时秒数（默认 90） |
 
@@ -53,7 +53,7 @@ python3 scripts/feisou_search.py "词" --limit 30 --quiet   # 限条数、静默
 
 ```
 ## 飞书 高级搜索语法
-> 飞搜实际检索词：intitle:飞书 高级搜索语法 site:feishu.cn | "飞书 高级搜索语法" site:feishu.cn | Feishu site:feishu.cn
+> 实际检索词：intitle:飞书 高级搜索语法 site:feishu.cn | "飞书 高级搜索语法" site:feishu.cn | Feishu site:feishu.cn
 > 命中约 49 篇 / 知识库 20 个 / 耗时 7.1s
 
 1. [玩转高级搜索](https://7337552821032026115.feishu.cn/wiki/FeAFw1KCwiZyxXkdu5lcIAkQnTf)
@@ -64,7 +64,7 @@ python3 scripts/feisou_search.py "词" --limit 30 --quiet   # 限条数、静默
 
 ## 工作原理
 
-脚本调用的是飞搜网页端搜索所用的公开接口：
+脚本调用的是公开的飞书文档搜索接口：
 
 ```
 GET https://feisou.app/api/search?q=<urlencode 词>     # SSE, text/event-stream
@@ -95,4 +95,4 @@ LICENSE
 
 MIT，见 [LICENSE](LICENSE)。
 
-> 本项目与飞搜（feisou.app）无隶属关系，仅调用其公开接口。
+> 本项目与所调用的第三方公开接口无隶属关系。

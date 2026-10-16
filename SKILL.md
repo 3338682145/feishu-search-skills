@@ -1,11 +1,11 @@
 ---
 name: feisou-search
-description: 搜索飞书（Feishu/Lark）公开云文档与知识库，零配置开箱即用：直接调用 feisou.app 的公开 SSE 搜索接口，无需注册、无需登录、无需任何密钥、无需浏览器，输出标题+链接+所属知识库+摘要。当用户要求"搜飞书文档 / 飞搜 / 找飞书教程 / 溯源某篇飞书 wiki / search feishu docs"时使用。
+description: 搜索飞书（Feishu/Lark）公开云文档与知识库，零配置开箱即用：直接调用公开的飞书文档搜索接口（SSE），无需注册、无需登录、无需任何密钥、无需浏览器，输出标题+链接+所属知识库+摘要。当用户要求"搜飞书文档 / 找飞书教程 / 溯源某篇飞书 wiki / search feishu docs"时使用。
 ---
 
-# 飞搜（feisou.app）飞书文档搜索 Skill
+# 飞书公开文档搜索 Skill
 
-覆盖 Google/Bing **搜不到**的租户知识库（`<租户>.feishu.cn/wiki/...`）：飞搜有自建的公开文档索引 + 网页结果（`site:feishu.cn`）二次语义过滤。
+覆盖 Google/Bing **搜不到**的租户知识库（`<租户>.feishu.cn/wiki/...`）：该接口背后有自建的公开文档索引 + 网页结果（`site:feishu.cn`）二次语义过滤。
 
 ## 1. 用法（开箱即用，无任何前置配置）
 
@@ -24,7 +24,7 @@ python3 scripts/feisou_search.py "词" --timeout 60 --quiet
 
 ## 2. 工作原理
 
-`GET https://feisou.app/api/search?q=<urlencode 词>`（SSE，`text/event-stream`）——飞搜网页端搜索用的就是这个公开接口，未登录访问时前端照常发起请求，服务端不做身份校验。
+`GET https://feisou.app/api/search?q=<urlencode 词>`（SSE，`text/event-stream`）——公开的飞书文档搜索接口，未登录访问时前端照常发起请求，服务端不做身份校验。
 
 事件流：`progress`（进度）→ `queries`（AI 改写的检索词）→ `result`（`groups` 按知识库聚合 / `flat_docs` 扁平列表 / `markdown` 成品 / `total_elapsed`）。
 
@@ -41,4 +41,4 @@ python3 scripts/feisou_search.py "词" --timeout 60 --quiet
 ## 4. 相关
 
 - Google/Bing 基本不收录 `<租户>.feishu.cn/docx|doc|base`（`site:feishu.cn/docx` 实测 0 条），可用 `site:feishu.cn` / `site:feishu.cn/wiki` 兜底；客户端内检索语法见飞书官方《高级搜索语法》。
-- 两个同名站点别混：`feisou.app`（本 skill，覆盖租户 wiki）vs `feisous.com`（偏 Google 结果壳，`/search?q=`）。
+- 本 skill 只依赖上面这一个公开接口；另有一个名字相近、结果偏 Google 索引壳的站点（`/search?q=`），勿混用。
