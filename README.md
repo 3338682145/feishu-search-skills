@@ -1,4 +1,4 @@
-# feisou-search-skill
+# feishu-search-skills
 
 **免 token 搜索飞书（Feishu / Lark）公开云文档与知识库。**
 
